@@ -577,7 +577,7 @@
       else diag = 'TG: initData ' + (window.Telegram.WebApp.initData ? 'есть' : 'НЕТ')
         + ' · user ' + (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? 'есть (имя=' + (window.Telegram.WebApp.initDataUnsafe.user.first_name || '?') + ')' : 'НЕТ');
     } catch (e) { diag = 'TG: ошибка ' + e; }
-    const dEl = document.getElementById('prof-diag');
+    let dEl = document.getElementById('prof-diag');
     if (!dEl) {
       const box = document.createElement('div');
       box.id = 'prof-diag'; box.className = 'muted';
