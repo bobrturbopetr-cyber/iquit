@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>IQuit — тренировка интеллекта</title>
+  <link rel="icon" type="image/png" href="assets/logo-iqquit.jpg">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <div id="loading-screen" class="loading">
+    <div class="cube"></div>
+    <div class="muted">Загрузка…</div>
+  </div>
+
+  <div class="app" id="app-root">
+
+    <!-- ============ ЭКРАН: ГЛАВНЫЙ ============ -->
+    <section class="screen" id="screen-home">
+      <div class="topbar">
+        <div class="brand">
+          <img class="brand-logo" src="assets/logo-iqquit.jpg" alt="IQuit">
+          <div class="name">I<span>Quit</span></div>
+        </div>
+        <div class="spacer"></div>
+        <button class="icon-btn" id="btn-home-friends" title="Друзья"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 5.5a3.5 3.5 0 0 1 0 6"/><path d="M18.5 20c0-2.3-1.2-3.8-3-4.5"/></svg></button>
+        <button class="icon-btn" id="btn-home-profile" title="Профиль"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></button>
+      </div>
+
+      <div class="card hero">
+        <img class="hero-img" src="assets/hero.jpg" alt="IQuit">
+        <div class="hero-overlay">
+          <h2 id="home-greeting">Добро пожаловать!</h2>
+          <p id="home-subtitle">Пройди тест, узнай слабые зоны и прокачай мозг.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="player-row">
+          <div class="avatar" id="home-avatar">?</div>
+          <div class="player-meta">
+            <div class="pname" id="home-name">Игрок</div>
+            <div class="psub" id="home-meta">IQ: — · Прогресс: —</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" id="btn-start-test">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.8 7.2 17l.9-5.4L4.2 7.7l5.4-.8z"/></svg>
+        Начать тест
+      </button>
+      <button class="btn secondary" id="btn-home-levels">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20h2M4 20V10h3v10M9 20h2M9 20V4h3v16M14 20h2M14 20v-7h3v7"/></svg>
+        Уровни знаний
+      </button>
+      <button class="btn secondary" id="btn-my-plan">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h6M9 12h6M9 18h3"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+        Моя программа
+      </button>
+      <button class="btn ghost" id="btn-home-shock">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2 4.5 13H11l-1 9 8.5-11H12z"/></svg>
+        Ударный режим
+      </button>
+    </section>
+
+    <!-- ============ ЭКРАН: ДРУЗЬЯ ============ -->
+    <section class="screen hidden" id="screen-friends">
+      <div class="topbar">
+        <button class="icon-btn btn-back" data-back="screen-home"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="name" style="font-size:18px">Друзья и рейтинг</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Лидеры</div>
+        <div id="friends-list"><div class="muted center">Пока нет данных. Пригласи друзей!</div></div>
+        <div class="share-block">
+          <div class="center" style="font-size:13px;color:var(--muted);margin-bottom:10px">Позови друзей через ссылку бота:</div>
+          <button class="btn secondary small" id="btn-invite">Скопировать ссылку</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ЭКРАН: ПРОФИЛЬ ============ -->
+    <section class="screen hidden" id="screen-profile">
+      <div class="topbar">
+        <button class="icon-btn btn-back" data-back="screen-home"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="name" style="font-size:18px">Профиль</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="card">
+        <div class="player-row">
+          <div class="avatar" id="prof-avatar">?</div>
+          <div class="player-meta">
+            <div class="pname" id="prof-name">Игрок</div>
+            <div class="psub" id="prof-sub">Stat</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          История IQ
+        </div>
+        <div id="prof-history"><div class="muted center">Прогресс пока не создан.</div></div>
+      </div>
+      <button class="btn secondary" id="btn-reset-progress">Сбросить прогресс</button>
+    </section>
+
+    <!-- ============ ЭКРАН: ТЕСТ ============ -->
+    <section class="screen hidden" id="screen-quiz">
+      <div class="topbar">
+        <div class="brand">
+          <img class="brand-logo" src="assets/logo-iqquit.jpg" alt="IQuit">
+          <div class="name" style="font-size:16px">Тест</div>
+        </div>
+        <div class="quiz-topright">
+          <div class="quiz-progress" id="quiz-counter">1 / 10</div>
+          <div class="quiz-timer" id="quiz-timer">
+            <span class="ticks" id="quiz-timer-ticks">30</span>
+            <div class="quiz-timerbar"><div class="quiz-timerfill" id="quiz-timer-fill"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="quiz-head">
+          <span class="category-chip" id="quiz-chip">
+            <span class="dot" id="quiz-chip-dot"></span>
+            <span id="quiz-chip-name">Тема</span>
+          </span>
+        </div>
+        <div class="quiz-body" id="quiz-body"></div>
+      </div>
+      <button class="btn hidden" id="quiz-next">Далее</button>
+    </section>
+
+    <!-- ============ ЭКРАН: РЕЗУЛЬТАТ ============ -->
+    <section class="screen hidden" id="screen-result">
+      <div class="card result-hero">
+        <img src="assets/screen-result.jpg" alt="Результат">
+        <div class="iq-big" id="res-iq">—</div>
+        <div class="iq-label" id="res-label">Твой IQ</div>
+        <div class="muted center" style="margin-top:8px;font-size:13px" id="res-sub">Проанализировали твои ответы</div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Что прокачать</div>
+        <div class="prog-list" id="res-weak"></div>
+        <div id="res-explain"></div>
+      </div>
+
+      <button class="btn" id="btn-open-program">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h6M9 12h6M9 18h3"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+        Открыть программу тренировки
+      </button>
+      <button class="btn ghost" id="btn-result-home">На главную</button>
+    </section>
+
+    <!-- ============ ЭКРАН: ПРОГРАММА (теория + практика) ============ -->
+    <section class="screen hidden" id="screen-program">
+      <div class="topbar">
+        <button class="icon-btn btn-back" data-back="screen-home"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="name" style="font-size:18px">Моя программа</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Теория под твои слабые зоны</div>
+        <div id="program-theory"><div class="muted">Программа ещё не построена. Пройди тест.</div></div>
+      </div>
+      <button class="btn" id="btn-start-practice">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        Начать практику
+      </button>
+    </section>
+
+    <!-- ============ ЭКРАН: УРОВНИ ТЕМЫ ============ -->
+    <section class="screen hidden" id="screen-levels">
+      <div class="topbar">
+        <button class="icon-btn btn-back" data-back="screen-home"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="name" style="font-size:18px" id="levels-title">Уровни</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="card">
+        <div class="player-row">
+          <img class="avatar" id="levels-topic-img" src="" alt="" style="width:48px;height:48px;border-radius:12px;object-fit:cover;background:var(--card)">
+          <div class="player-meta">
+            <div class="pname" id="levels-topic-name">Тема</div>
+            <div class="psub" id="levels-progress">Уровень 1</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Прогресс по уровням</div>
+        <div id="levels-bar" class="rank-row">
+          <div style="flex:1;height:10px;border-radius:6px;background:rgba(255,255,255,0.1);overflow:hidden">
+            <div id="levels-bar-fill" style="height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .4s"></div>
+          </div>
+        </div>
+        <div class="muted center" style="margin-top:6px;font-size:12px" id="levels-count"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Теория текущего уровня</div>
+        <div id="levels-theory" class="theory-block"></div>
+        <div id="levels-course-aware"></div>
+      </div>
+      <button class="btn secondary hidden" id="btn-open-course">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Пройти курс
+      </button>
+      <div id="levels-practice-blocker"></div>
+      <button class="btn" id="btn-level-practice">Начать практику уровня</button>
+      <button class="btn ghost hidden" id="btn-master-mode">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l1.7 4.6L18 9l-4.3 1.4L12 15l-1.7-4.6L6 9l4.3-1.4z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/></svg>
+        Мастер-режим
+      </button>
+    </section>
+
+    <!-- ============ ЭКРАН: КУРС ============ -->
+    <section class="screen hidden" id="screen-course">
+      <div class="topbar">
+        <button class="icon-btn btn-back" data-back="screen-levels"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="name" style="font-size:18px" id="course-title">Курс</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="card" id="course-body">
+        <div class="muted">Курс загружается…</div>
+      </div>
+      <button class="btn" id="btn-course-next">Следующий урок</button>
+    </section>
+
+    <!-- ============ ЭКРАН: МАСТЕР-РЕЖИМ ============ -->
+    <section class="screen hidden" id="screen-master">
+      <div class="topbar">
+        <button class="icon-btn btn-back" data-back="screen-home"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="name" style="font-size:18px">Мастер-режим</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Создать свой вопрос</div>
+        <label class="muted" style="font-size:13px">Категория</label>
+        <select id="master-cat" class="opt" style="width:100%;margin:4px 0 10px;background:var(--card);color:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px"></select>
+        <label class="muted" style="font-size:13px">Вопрос</label>
+        <input id="master-q" class="opt" style="width:100%;margin:4px 0 10px;background:var(--card);color:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px" placeholder="Текст вопроса">
+        <label class="muted" style="font-size:13px">Вариант A (правильный)</label>
+        <input id="master-a" class="opt" style="width:100%;margin:4px 0 8px;background:var(--card);color:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px" placeholder="Правильный ответ">
+        <label class="muted" style="font-size:13px">Варианты B, C, D</label>
+        <input id="master-b" class="opt" style="width:100%;margin:4px 0 8px;background:var(--card);color:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px" placeholder="Неверный вариант">
+        <input id="master-c" class="opt" style="width:100%;margin:4px 0 8px;background:var(--card);color:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px" placeholder="Неверный вариант">
+        <input id="master-d" class="opt" style="width:100%;margin:4px 0 10px;background:var(--card);color:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px" placeholder="Неверный вариант">
+        <div class="explain hidden" id="master-status"></div>
+        <button class="btn" id="btn-master-submit">Отправить на модерацию</button>
+      </div>
+      <div class="card">
+        <div class="section-title">Решить вопросы мастеров</div>
+        <div id="master-review-list"><div class="muted center">Пока нет вопросов от мастеров.</div></div>
+        <button class="btn secondary" id="btn-master-review">Решать чужой вопрос</button>
+      </div>
+    </section>
+
+    <!-- ============ ЭКРАН: УДАРНЫЙ РЕЖИМ ============ -->
+    <section class="screen hidden" id="screen-shock">
+      <div class="topbar">
+        <button class="icon-btn btn-back" data-back="screen-home"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="name" style="font-size:18px">Ударный режим</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="card hero">
+        <img class="hero-img" src="assets/screen-shock.jpg" alt="Ударный режим">
+        <div class="hero-overlay" style="background:linear-gradient(to top, rgba(15,16,35,0.9), transparent 60%)">
+          <h2>Режим соперничества</h2>
+          <p>Брось вызов другу или следи за его результатами за один раунд.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Соперники</div>
+        <div id="shock-list"><div class="muted">Добавь друзей, чтобы сравнить результаты.</div></div>
+      </div>
+      <button class="btn" id="btn-shock-1v1">Бросить вызов</button>
+      <button class="btn secondary" id="btn-shock-solo">Быстрый раунд</button>
+    </section>
+
+    <!-- ============ ЭКРАН: БЫСТРЫЙ РАУНД / СОПЕРНИК ============ -->
+    <section class="screen hidden" id="screen-speedquiz">
+      <div class="topbar">
+        <button class="icon-btn btn-back" data-back="screen-home"
+          ><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="quiz-progress" id="speed-counter">Таймер</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="card">
+        <span class="category-chip" id="speed-chip"><span class="dot" id="speed-chip-dot"></span><span id="speed-chip-name"></span></span>
+        <div class="q-text" id="speed-q"></div>
+        <div class="options" id="speed-options"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="data.js"></script>
+  <script src="levels.js"></script>
+  <script src="algorithm.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
