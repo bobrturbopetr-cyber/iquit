@@ -578,6 +578,22 @@
       p.innerHTML = `<div class="pos"></div><div class="aname">${label}</div><div class="muted" style="font-size:12px">${d.toLocaleDateString()}</div>`;
       h.appendChild(p);
     });
+    // Диагностика Telegram (временная, для отладки «Игрок вместо ника»)
+    let diag = '';
+    try {
+      if (typeof window.Telegram === 'undefined') diag = 'TG API: НЕ загружен (SDK telegram.org)';
+      else if (!window.Telegram.WebApp) diag = 'TG API: WebApp отсутствует';
+      else diag = 'TG: initData ' + (window.Telegram.WebApp.initData ? 'есть' : 'НЕТ')
+        + ' · user ' + (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user ? 'есть (имя=' + (window.Telegram.WebApp.initDataUnsafe.user.first_name || '?') + ')' : 'НЕТ');
+    } catch (e) { diag = 'TG: ошибка ' + e; }
+    const dEl = document.getElementById('prof-diag');
+    if (!dEl) {
+      const box = document.createElement('div');
+      box.id = 'prof-diag'; box.className = 'muted';
+      h.appendChild(box);
+      dEl = box;
+    }
+    dEl.textContent = diag;
   }
 
   // ---------- УРОВНИ / КУРСЫ / МАСТЕР ----------
