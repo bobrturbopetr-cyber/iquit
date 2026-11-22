@@ -569,15 +569,6 @@
     profSub.textContent = `${sub} · IQ: ${state.lastIQ || '—'} · Циклов: ${state.rounds}`;
     const h = $('#prof-history');
     h.innerHTML = '';
-    if (!history.length) { h.innerHTML = '<div class="muted">Пока нет истории.</div>'; return; }
-    history.slice(0, 10).forEach(ev => {
-      const d = new Date(ev.t);
-      const p = document.createElement('div');
-      p.className = 'rank-row';
-      const label = ev.speed ? `Ударный раунд: ${ev.right}/${ev.total}` : ev.practice ? `Практика: ${ev.right}/${ev.total}` : `IQ: ${ev.iq}`;
-      p.innerHTML = `<div class="pos"></div><div class="aname">${label}</div><div class="muted" style="font-size:12px">${d.toLocaleDateString()}</div>`;
-      h.appendChild(p);
-    });
     // Диагностика Telegram (временная, для отладки «Игрок вместо ника»)
     let diag = '';
     try {
@@ -594,6 +585,15 @@
       dEl = box;
     }
     dEl.textContent = diag;
+    if (!history.length) { return; }
+    history.slice(0, 10).forEach(ev => {
+      const d = new Date(ev.t);
+      const p = document.createElement('div');
+      p.className = 'rank-row';
+      const label = ev.speed ? `Ударный раунд: ${ev.right}/${ev.total}` : ev.practice ? `Практика: ${ev.right}/${ev.total}` : `IQ: ${ev.iq}`;
+      p.innerHTML = `<div class="pos"></div><div class="aname">${label}</div><div class="muted" style="font-size:12px">${d.toLocaleDateString()}</div>`;
+      h.appendChild(p);
+    });
   }
 
   // ---------- УРОВНИ / КУРСЫ / МАСТЕР ----------
