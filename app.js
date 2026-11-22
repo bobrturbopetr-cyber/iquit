@@ -779,6 +779,13 @@
 
   // ---------- Инициализация ----------
   function init() {
+    // Диагностика Telegram (для отладки «Игрок вместо ника»)
+    try {
+      console.log('[IQuit-diag] telem=', !!window.Telegram,
+        'initData=', !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData),
+        'user=', window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe &&
+          (window.Telegram.WebApp.initDataUnsafe.user || null));
+    } catch (e) { console.log('[IQuit-diag] err', e); }
     extractTgUser();
     state.user = userName();
     applyTgTheme();
