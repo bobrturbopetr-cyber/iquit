@@ -87,6 +87,9 @@ body {
   color: #0f1023; font-weight: 800; font-size: 22px;
   display: flex; align-items: center; justify-content: center;
   box-shadow: var(--shadow);
+  background-position: center;
+  background-size: cover;
+  overflow: hidden;
 }
 .player-meta .pname { font-weight: 700; font-size: 17px; }
 .player-meta .psub { color: var(--muted); font-size: 13px; }
