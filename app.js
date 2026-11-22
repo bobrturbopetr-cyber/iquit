@@ -37,9 +37,6 @@
   // ---------- Состояние ----------
   let state = {
     user: null,
-    tgId: null,          // id пользователя в Telegram (для привязки профиля)
-    username: null,      // @username в Telegram
-    photo: null,         // фото профиля Telegram
     rounds: 0,          // сколько полных циклов теста пройдено
     answers: [],        // все ответы этого цикла [{catId, correct}]
     lastIQ: 0,
@@ -74,17 +71,75 @@
     });
   }
 
-  // ---------- Пользователь Telegram ----------
-  function tgUser() {
-    if (telem && telem.initDataUnsafe && telem.initDataUnsafe.user) {
-      return telem.initDataUnsafe.user; // id, first_name, last_name, username, photo_url
-    }
-    return null;
-  }
+  // ---------- Имя пользователя ----------
   function userName() {
-    const u = tgUser();
-    if (u) return (u.first_name || '') + (u.last_name ? ' ' + u.last_name : '');
+    if (telem && telem.initDataUnsafe && telem.initDataUnsafe.user) {
+      const u = telem.initDataUnsafe.user;
+      return (u.first_name || '') + (u.last_name ? ' ' + u.last_name : '');
+    }
     return 'Игрок';
+  }
+
+  // Извлечение полных данных Telegram-пользователя из initDataUnsafe.
+  let tgUser = null;
+  function extractTgUser() {
+    if (!(telem && telem.initDataUnsafe && telem.initDataUnsafe.user)) return null;
+    const u = telem.initDataUnsafe.user;
+    tgUser = {
+      id: u.id != null ? String(u.id) : '',
+      username: u.username || '',
+      first: u.first_name || '',
+      last: u.last_name || '',
+      photo: u.photo_url || '',
+      initData: telem.initData || '',
+      lang: (u.language_code || 'ru').slice(0, 2)
+    };
+    return tgUser;
+  }
+
+  // Применить тему Telegram (светлая/тёмная) к CSS-переменным.
+  function applyTgTheme() {
+    const cs = (telem && telem.themeParams) ? telem.themeParams : null;
+    if (!cs) return;
+    const r = document.documentElement.style;
+    if (cs.bg_color) r.setProperty('--bg', cs.bg_color);
+    if (cs.text_color) r.setProperty('--ink', cs.text_color);
+    if (cs.hint_color) r.setProperty('--muted', cs.hint_color);
+    if (cs.button_color) r.setProperty('--accent', cs.button_color);
+    if (cs.button_text_color) r.setProperty('--accent-ink', cs.button_text_color);
+  }
+
+  // Показ/скрытие системной MainButton Telegram.
+  function setMainButton(show, text, onTap) {
+    if (!telem || !telem.MainButton) return;
+    try {
+      if (show) {
+        telem.MainButton.setParams({ text: text || 'Продолжить', is_visible: true, is_active: true });
+        if (onTap) { telem.MainButton.onClick(onTap); }
+      } else {
+        telem.MainButton.hide();
+      }
+    } catch (e) {}
+  }
+
+  // ---- Проверка initData ----
+  // Полную криптографическую проверку подписи (HMAC-SHA256 на основе токена бота)
+  // можно выполнять ТОЛЬКО на сервере — хардкодить токен бота в клиентский код нельзя,
+  // т.к. app.js лежит в открытом доступе на GitHub Pages и секрет будет раскрыт.
+  // Здесь делаем безопасную структурную проверку: initData существует и содержит hash+user.
+  let effectiveTg = false;
+
+  function validateInitData() {
+    if (!telem || !telem.initData) return false;
+    try {
+      const params = new URLSearchParams(telem.initData);
+      const hasHash = !!params.get('hash');
+      const hasUser = !!telem.initDataUnsafe && !!telem.initDataUnsafe.user;
+      effectiveTg = hasHash && hasUser;
+    } catch (e) {
+      effectiveTg = false;
+    }
+    return effectiveTg;
   }
 
   // ---------- Навигация по экранам ----------
@@ -280,6 +335,7 @@
   }
 
   function renderResult(iq, scores, weak, program) {
+    setMainButton(false);
     $('#res-iq').textContent = iq;
     const label = iq >= 120 ? 'Высокий IQ' : iq >= 100 ? 'Хороший IQ' : iq >= 80 ? 'Средний IQ' : 'Тренируйся активнее';
     $('#res-label').textContent = label;
@@ -342,6 +398,7 @@
     pracResult = [];
     pracWeak = 0; pracTotal = 0;
     inPractice = true;
+    setMainButton(true, 'Далее');
     // Собираем практику из всех заваленных тем программы
     (state.program || []).forEach(seg => {
       (seg.topics.practice || []).forEach(p => practice.push({ catId: seg.catId, ...p }));
@@ -411,6 +468,7 @@
       // Сохранить результат в историю (как ещё один "раунд"), показать результат
       history.unshift({ iq: state.lastIQ, t: Date.now(), practice: true, right: pracWeak, total: pracTotal });
       save(() => {
+        setMainButton(false);
         show('screen-result');
         $('#res-iq').textContent = state.lastIQ || '—';
         $('#res-label').textContent = 'Практика завершена';
@@ -504,19 +562,11 @@
 
   // ---------- Профиль ----------
   function renderProfile() {
+    renderUserBadge();
     $('#prof-name').textContent = state.user || 'Игрок';
-    $('#prof-sub').textContent = `IQ: ${state.lastIQ || '—'} · Циклов: ${state.rounds}`;
-    // аватар профиля: фото Telegram или инициал
-    const pa = $('#prof-avatar');
-    if (state.photo) {
-      pa.style.backgroundImage = 'url(' + state.photo + ')';
-      pa.style.backgroundSize = 'cover';
-      pa.style.backgroundPosition = 'center';
-      pa.textContent = '';
-    } else {
-      pa.style.backgroundImage = '';
-      pa.textContent = (state.user[0] || '?').toUpperCase();
-    }
+    const profSub = $('#prof-sub');
+    const sub = tgUser && tgUser.username ? '@' + tgUser.username : (state.user || 'Игрок');
+    profSub.textContent = `${sub} · IQ: ${state.lastIQ || '—'} · Циклов: ${state.rounds}`;
     const h = $('#prof-history');
     h.innerHTML = '';
     if (!history.length) { h.innerHTML = '<div class="muted">Пока нет истории.</div>'; return; }
@@ -729,37 +779,48 @@
 
   // ---------- Инициализация ----------
   function init() {
-    const u = tgUser();
-    // Привязываем профиль к Telegram-пользователю (id, username, фото)
+    extractTgUser();
     state.user = userName();
-    state.tgId = u ? u.id : (state.tgId || null);
-    state.username = u && u.username ? ('@' + u.username) : (state.username || null);
-    state.photo = u && u.photo_url ? u.photo_url : (state.photo || null);
+    applyTgTheme();
+    renderUserBadge();
     show('screen-home');
     $('#home-name').textContent = state.user;
     $('#home-avatar').textContent = (state.user[0] || '?').toUpperCase();
-    // если есть фото профиля — показываем как аватар
-    if (state.photo) {
-      const av = $('#home-avatar');
-      av.style.backgroundImage = 'url(' + state.photo + ')';
-      av.style.backgroundSize = 'cover';
-      av.style.backgroundPosition = 'center';
-      av.textContent = '';
-    }
     $('#home-meta').textContent = state.lastIQ ? `IQ: ${state.lastIQ} · Циклов: ${state.rounds}` : 'IQ: — · Начни с теста';
     if (telem) {
       telem.ready();
       telem.expand();
       try { telem.setHeaderColor('#0f1023'); telem.setBackgroundColor('#0f1023'); } catch(e){}
+      try { if (telem.HapticFeedback) telem.HapticFeedback.impactOccurred('light'); } catch(e){}
     }
     $('#loading-screen').classList.add('hidden');
     $('#app-root').classList.add('active');
+  }
+
+  // Заполнить аватар (и фото Telegram, если есть) в шапке и в профиле.
+  function renderUserBadge() {
+    const photo = tgUser && tgUser.photo;
+    if (photo) {
+      const avs = $$('#home-avatar, #prof-avatar');
+      avs.forEach(a => {
+        a.style.backgroundImage = 'url("' + photo + '")';
+        a.style.backgroundSize = 'cover';
+        a.style.backgroundPosition = 'center';
+        a.textContent = '';
+      });
+    }
+    // подпись в профеле: username
+    const profSub = $('#prof-sub');
+    if (profSub && tgUser && tgUser.username) {
+      profSub.textContent = '@' + tgUser.username + (state.lastIQ ? ' · IQ: ' + state.lastIQ : '');
+    }
   }
 
   // ---------- События ----------
   function bind() {
     $('#btn-start-test').addEventListener('click', () => {
       inPractice = false;
+      setMainButton(true, 'Далее');
       quiz = buildQuiz(); quizIdx = 0; quizResult = [];
       show('screen-quiz'); renderQuiz();
     });
@@ -784,6 +845,14 @@
       if (inPractice) nextPractice();
       else nextQuiz();
     });
+    // Системная MainButton Telegram — дубль кнопки «Далее» в тесте/практике
+    if (telem && telem.MainButton) {
+      telem.MainButton.onClick(() => {
+        if (memoTimer) { clearTimeout(memoTimer); memoTimer = null; }
+        if (inPractice) nextPractice();
+        else nextQuiz();
+      });
+    }
 
     $('#btn-open-program').addEventListener('click', () => { renderProgram(); show('screen-program'); });
     $('#btn-result-home').addEventListener('click', () => show('screen-home'));
@@ -831,7 +900,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    loadAll(() => { init(); bind(); });
+    loadAll(() => {
+      validateInitData();
+      init(); bind();
+    });
   });
 
 })();
